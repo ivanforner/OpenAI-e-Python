@@ -8,27 +8,23 @@ load_dotenv()
 cliente = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-def gerar_caso_uso():
-    documento_casos = carrega('documentos/explicacao_casos.txt')
+def gerar_caso_uso(prompt, modelo=MODELO_REFINADO):
 
     prompt_sistema = f"""
         Você é um especialista em desenvolver casos de uso. Você deve adotar o padrão abaixo
         para gerar seu caso de uso:
         
-        {documento_casos}
+        *Nome da Persona*, em *contexto do app*, precisa realizar *tarefa no app* no aplicativo.
+        Logo, *Beneficio Esperado*, para isso e a *descrição detalhada da tarefa realizada*.
         
-        Considere os dados de entrada sugeridos pelo usuário.
-    """
-
-    prompt_usuario = f"""
-        Gere um caso de uso para Ana que deseja realizar login na plataforma AcordeLab
+        Considere os dados de entrada sugeridos pelo usuário e gere o caso de uso no formato adequado.
     """
 
     resposta = cliente.chat.completions.create(
-        model='gpt-4o-mini',
+        model=modelo,
         messages=[
             {"role": "system", "content": prompt_sistema},
-            {"role": "user", "content": prompt_usuario}
+            {"role": "user", "content": prompt}
         ],
         temperature=0.5
     )

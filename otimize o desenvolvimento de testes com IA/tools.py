@@ -1,3 +1,7 @@
+MODELO_REFINADO = "ft:gpt-3.5-turbo-1106:yp::AvOXLBxZ"
+MODELO_GPT = "gpt-3.5-turbo-1106"
+
+
 def carrega(nome_do_arquivo):
     try:
         with open(nome_do_arquivo, 'r', encoding='utf-8') as arquivo:
