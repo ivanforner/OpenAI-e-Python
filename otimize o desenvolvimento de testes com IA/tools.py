@@ -1,5 +1,8 @@
 MODELO_REFINADO = "ft:gpt-3.5-turbo-1106:yp::AvOXLBxZ"
 MODELO_GPT = "gpt-3.5-turbo-1106"
+MODELO_GPT_4 = "gpt-4o"
+STATUS_COMPLETED = "completed"
+STATUS_FAILED = 'failed'
 
 
 def carrega(nome_do_arquivo):
