@@ -5,6 +5,7 @@ from gerador_cenario_teste import *
 from gerador_script_teste import *
 from tools import *
 from assistente_projeto import *
+from criador_usuarios_de_teste import *
 
 
 def main():

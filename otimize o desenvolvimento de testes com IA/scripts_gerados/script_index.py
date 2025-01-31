@@ -4,40 +4,98 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 import time
 
-# Configurando o serviço do ChromeDriver
-service = Service(executable_path='../driver/chromedriver.exe')  # Substitua pelo caminho do seu chromedriver
+# Configuração do WebDriver
+chrome_options = Options()
+driver_service = Service('../driver/chromedriver.exe')  # Substitua pelo caminho para o ChromeDriver
+driver = webdriver.Chrome(service=driver_service)
 
-# Inicializando o driver
-driver = webdriver.Chrome(service=service)
+# Lista de casos de teste
+test_cases = [
+    {
+        "id": "TC_001",
+        "description": "Login with valid credentials",
+        "steps": [
+            {"action": "navigate", "target": "https://almsantana.github.io/"},
+            {"action": "input_text", "target": "input#email", "value": "email@acordelab.com.br"},
+            {"action": "input_text", "target": "input#senha", "value": "123senha"},
+            {"action": "click", "target": "input.botao-login"},
+            {"action": "verify_not_present", "target": ".mensagem-erro"},
+            {"action": "verify_url", "value": "file:///caminho/para/home.html"},
+            {"action": "verify_presence", "target": ".course-grid"}
+        ],
+        "expected_result": "Aprovado"
+    },
+    {
+        "id": "TC_002",
+        "description": "Login with invalid email",
+        "steps": [
+            {"action": "navigate", "target": "https://almsantana.github.io/"},
+            {"action": "input_text", "target": "input#email", "value": "wrong_email@acordelab.com.br"},
+            {"action": "input_text", "target": "input#senha", "value": "123senha"},
+            {"action": "click", "target": "input.botao-login"},
+            {"action": "verify_present", "target": ".mensagem-erro"}
+        ],
+        "expected_result": "Reprovado"
+    },
+    {
+        "id": "TC_003",
+        "description": "Login with invalid password",
+        "steps": [
+            {"action": "navigate", "target": "https://almsantana.github.io/"},
+            {"action": "input_text", "target": "input#email", "value": "email@acordelab.com.br"},
+            {"action": "input_text", "target": "input#senha", "value": "wrong_password"},
+            {"action": "click", "target": "input.botao-login"},
+            {"action": "verify_present", "target": ".mensagem-erro"}
+        ],
+        "expected_result": "Reprovado"
+    },
+    {
+        "id": "TC_004",
+        "description": "Login with blank credentials",
+        "steps": [
+            {"action": "navigate", "target": "https://almsantana.github.io/"},
+            {"action": "input_text", "target": "input#email", "value": ""},
+            {"action": "input_text", "target": "input#senha", "value": ""},
+            {"action": "click", "target": "input.botao-login"},
+            {"action": "verify_present", "target": ".mensagem-erro"}
+        ],
+        "expected_result": "Reprovado"
+    }
+]
 
-try:
-    # Passo 1: Acessar a Página Inicial
-    driver.get("https://almsantana.github.io/")
-    assert "Index - AcordeLab" in driver.title  # Verifica se a página carregou corretamente
+# Função para executar passos do caso de teste
+def execute_step(step):
+    if step["action"] == "navigate":
+        driver.get(step["target"])
+    elif step["action"] == "input_text":
+        element = driver.find_element(By.CSS_SELECTOR, step["target"])
+        element.clear()
+        element.send_keys(step["value"])
+    elif step["action"] == "click":
+        driver.find_element(By.CSS_SELECTOR, step["target"]).click()
+    elif step["action"] == "verify_present":
+        assert driver.find_element(By.CSS_SELECTOR, step["target"]).is_displayed()
+    elif step["action"] == "verify_not_present":
+        assert not driver.find_element(By.CSS_SELECTOR, step["target"]).is_displayed()
+    elif step["action"] == "verify_url":
+        assert driver.current_url == step["value"]
+    elif step["action"] == "verify_presence":
+        driver.find_element(By.CSS_SELECTOR, step["target"])
 
-    # Passo 2: Localizar o Formulário de Login
-    form_login = driver.find_element(By.ID, "formulario_login")
-    assert form_login is not None  # Confirma se o formulário de login está presente
+# Execução dos casos de teste
+for test in test_cases:
+    print(f"Executando {test['id']}: {test['description']}")
+    try:
+        for step in test["steps"]:
+            execute_step(step)
+        
+        print("Aprovado")
+    except AssertionError:
+        print("Reprovado")
+    except Exception as e:
+        print(f"Erro durante o teste: {str(e)}")
+    finally:
+        time.sleep(3)  # Pausar por 3 segundos antes do próximo teste
 
-    # Passo 3: Inserir Credenciais Válidas
-    email_input = driver.find_element(By.NAME, "email")
-    senha_input = driver.find_element(By.NAME, "senha")
-    email_input.send_keys("email@acordelab.com.br")
-    senha_input.send_keys("123senha")
-
-    # Passo 4: Submeter o Formulário de Login
-    botao_login = driver.find_element(By.CLASS_NAME, "botao-login")
-    botao_login.click()
-
-    time.sleep(3)  # Pausa de 3 segundos para garantir o carregamento da próxima página
-
-    # Passo 5: Verificar Redirecionamento
-    assert "home.html" in driver.current_url  # Verifica se a página de redirecionamento está correta
-
-    # Passo 6: Verificar Acesso ao Conteúdo
-    cursos_card = driver.find_elements(By.CLASS_NAME, "course-card")
-    assert len(cursos_card) > 0  # Confirma que Ana tem acesso ao conteúdo dos cursos
-
-finally:
-    time.sleep(3)  # Pausa de 3 segundos antes de fechar
-    driver.quit()  # Encerra o navegador
+# Encerrar o WebDriver
+driver.quit()
